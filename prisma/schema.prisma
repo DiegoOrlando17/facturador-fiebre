@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Payment {
+  id                  Int       @id @default(autoincrement())
+  provider            String
+  provider_payment_id String
+  status              String
+  payment_method_id   String?
+  amount              Float?
+  currency            String?
+  customer            String?
+  customer_doc_type   String?
+  customer_doc_number String?
+  date_approved       DateTime?
+  cae                 String?
+  cae_vto             String?
+  cbte_nro            String?
+  cbte_tipo           Int?
+  pto_vta             Int?
+  pdf_path            String?
+  drive_file_link     String?
+  sheets_row          String?
+  error               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([provider, provider_payment_id])
+}
+
+model InvoiceSequence {
+  id        Int      @id @default(autoincrement())
+  pto_vta   Int      @unique
+  cbte_tipo Int
+  last_nro  Int
+  updatedAt DateTime @updatedAt
+}
+
+model SystemConfig {
+  id         Int      @id @default(autoincrement())
+  key        String   @unique
+  value      String
+  updatedAt  DateTime @updatedAt
+}

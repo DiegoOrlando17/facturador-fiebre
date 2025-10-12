@@ -1,0 +1,39 @@
+{
+  "name": "facturador-fiebre",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node src/server.js",             
+    "start:workers": "node src/workers/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@afipsdk/afip.js": "^1.2.0",
+    "@google-cloud/local-auth": "^3.0.1",
+    "@prisma/client": "^6.17.0",
+    "axios": "^1.12.2",
+    "bullmq": "^5.61.0",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "googleapis": "^159.0.0",
+    "mercadopago": "^2.9.0",
+    "node-forge": "^1.3.1",
+    "p-limit": "^7.1.1",
+    "pdfkit": "^0.17.2",
+    "redis": "^5.8.3",
+    "sdk-node-payway": "^1.0.6",
+    "sdk-node-ventaonline": "^1.0.0",
+    "undici": "^7.16.0",
+    "xml2js": "^0.6.2",
+    "xmlbuilder2": "^3.1.1",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.17.0"
+  }
+}

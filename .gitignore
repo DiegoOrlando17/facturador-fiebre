@@ -1,0 +1,6 @@
+.env
+node_modules/
+certs/
+credentials/
+src/stress-test/runs/
+facturas/
