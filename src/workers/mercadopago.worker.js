@@ -54,8 +54,8 @@ export async function startMercadopagoWorker() {
 
                 const payment = await upsertPayment("mercadopago", String(p.id || ""), data);
 
-                const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id}`, { paymentId: payment.id }, {
-                    jobId: `job-payments-${payment.provider_payment_id}`,
+                const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id.toString()}`, { paymentId: payment.id.toString() }, {
+                    jobId: `job-payments-${payment.provider_payment_id.toString()}`,
                     attempts: 10,
                     backoff: { type: "exponential", delay: 3000 },
                     removeOnComplete: true,
@@ -73,7 +73,7 @@ export async function startMercadopagoWorker() {
                 lastTimestamp = newest.date_approved;
                 lastPaymentId = Number(newest.id);
 
-                await setSystemConfig("lastMercadopagoCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId }));
+                await setSystemConfig("lastMercadopagoCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId: lastPaymentId.toString() }));
             }
         }
         catch (error) {

@@ -59,8 +59,8 @@ export async function startPaywayWorker() {
 
                 const payment = await upsertPayment("payway", String(p.id || ""), data);
 
-                const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id}`, { paymentId: payment.id }, {
-                    jobId: `job-payments-${payment.provider_payment_id}`,
+                const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id.toString()}`, { paymentId: payment.id.toString() }, {
+                    jobId: `job-payments-${payment.provider_payment_id.toString()}`,
                     attempts: 10,
                     backoff: { type: "exponential", delay: 3000 },
                     removeOnComplete: true,
@@ -78,7 +78,7 @@ export async function startPaywayWorker() {
                 lastTimestamp = newest.date;
                 lastPaymentId = Number(newest.id);
 
-                await setSystemConfig("lastPaywayCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId }));
+                await setSystemConfig("lastPaywayCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId: lastPaymentId.toString() }));
             }
         }
         catch (error) {

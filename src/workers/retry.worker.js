@@ -21,8 +21,8 @@ async function reenqueuePendingPayments() {
         const { id, provider_payment_id, status } = payment;
 
         if (status === "afip_pending") {
-          await paymentsQueue.add(`payments-${provider_payment_id}`, { paymentId: id }, {
-            jobId: `job-payments-${provider_payment_id}`,
+          await paymentsQueue.add(`payments-${provider_payment_id.toString()}`, { paymentId: id.toString() }, {
+            jobId: `job-payments-${provider_payment_id.toString()}`,
             attempts: 5,
             backoff: { type: "exponential", delay: 3000 },
             removeOnComplete: true,
@@ -30,8 +30,8 @@ async function reenqueuePendingPayments() {
           });
         }
         else if (["pdf_pending", "drive_pending", "sheets_pending"].includes(status)) {
-          await invoicesQueue.add(`invoices-${provider_payment_id}`, { paymentId: id }, {
-            jobId: `job-invoices-${provider_payment_id}`,
+          await invoicesQueue.add(`invoices-${provider_payment_id.toString()}`, { paymentId: id.toString() }, {
+            jobId: `job-invoices-${provider_payment_id.toString()}`,
             attempts: 5,
             backoff: { type: "exponential", delay: 2000 },
             removeOnComplete: true,

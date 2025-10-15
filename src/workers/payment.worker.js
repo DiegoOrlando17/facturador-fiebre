@@ -53,8 +53,8 @@ const worker = new Worker("payments", async (job) => {
 
         await updatePayment(payment.id, payment);
 
-        const queue = await invoicesQueue.add(`invoices-${payment.provider_payment_id}`, { paymentId: payment.id }, {
-            jobId: `job-invoices-${payment.provider_payment_id}`,
+        const queue = await invoicesQueue.add(`invoices-${payment.provider_payment_id.toString()}`, { paymentId: payment.id.toString() }, {
+            jobId: `job-invoices-${payment.provider_payment_id.toString()}`,
             attempts: 5,
             backoff: { type: "exponential", delay: 2000 },
             removeOnComplete: true,

@@ -30,7 +30,7 @@ const worker = new Worker("invoices", async (job) => {
 
         if (payment.status === "processing" || payment.status === "pdf_pending" || payment.status === "drive_pending") {
 
-            const driveFile = await uploadToDrive(payment.pdf_path, `factura_${payment.provider_payment_id}.pdf`);
+            const driveFile = await uploadToDrive(payment.pdf_path, `factura_${payment.provider_payment_id.toString()}.pdf`);
             if (!driveFile) {
                 await updatePaymentStatus(payment.id, "drive_pending", "No se pudo subir la factura al drive.");
                 throw new Error("No se pudo subir la factura al drive.");
@@ -43,7 +43,7 @@ const worker = new Worker("invoices", async (job) => {
         if (payment.status === "processing" || payment.status === "pdf_pending" || payment.status === "drive_pending" || payment.status === "sheets_pending") {
 
             const sheets = await appendRow([
-                payment.provider_payment_id,
+                payment.provider_payment_id.toString(),
                 payment.cbte_nro,
                 payment.date_approved,
                 payment.amount,

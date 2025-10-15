@@ -6,7 +6,7 @@ import logger from "../utils/logger.js";
 export function createInvoicePDF(payment, cae, nroComprobante, fechaVtoCae) {
     try {
         return new Promise((resolve, reject) => {
-            const fileName = `factura_${payment.provider_payment_id}.pdf`;
+            const fileName = `factura_${payment.provider_payment_id.toString()}.pdf`;
             const filePath = `./facturas/${fileName}`;
 
             if (!fs.existsSync("./facturas")) {
