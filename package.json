@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "main": "server.js",
   "type": "module",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "start": "node src/server.js",             
+    "start": "node src/server.js",
     "start:workers": "node src/workers/index.js"
   },
   "keywords": [],
@@ -26,6 +28,7 @@
     "p-limit": "^7.1.1",
     "pdfkit": "^0.17.2",
     "redis": "^5.8.3",
+    "redis-cli": "^2.1.2",
     "sdk-node-payway": "^1.0.6",
     "sdk-node-ventaonline": "^1.0.0",
     "undici": "^7.16.0",
