@@ -65,7 +65,7 @@ export async function startMercadopagoWorker() {
 
             const newest = filtered.sort((a, b) => {
                 if (a.date_approved !== b.date_approved)
-                    return a.date.localeCompare(b.date_approved);
+                    return a.date_approved.localeCompare(b.date_approved);
                 return Number(a.id) - Number(b.id);
             }).at(-1);
 
