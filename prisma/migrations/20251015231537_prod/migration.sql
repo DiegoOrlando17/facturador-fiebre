@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "Payment" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "provider" TEXT NOT NULL,
     "provider_payment_id" TEXT NOT NULL,
     "status" TEXT NOT NULL,
@@ -28,13 +28,23 @@ CREATE TABLE "Payment" (
 
 -- CreateTable
 CREATE TABLE "InvoiceSequence" (
-    "id" SERIAL NOT NULL,
+    "id" BIGSERIAL NOT NULL,
     "pto_vta" INTEGER NOT NULL,
     "cbte_tipo" INTEGER NOT NULL,
-    "last_nro" INTEGER NOT NULL,
+    "last_nro" BIGINT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "InvoiceSequence_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SystemConfig" (
+    "id" BIGSERIAL NOT NULL,
+    "key" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SystemConfig_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -42,3 +52,6 @@ CREATE UNIQUE INDEX "Payment_provider_provider_payment_id_key" ON "Payment"("pro
 
 -- CreateIndex
 CREATE UNIQUE INDEX "InvoiceSequence_pto_vta_key" ON "InvoiceSequence"("pto_vta");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SystemConfig_key_key" ON "SystemConfig"("key");
