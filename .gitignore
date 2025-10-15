@@ -4,3 +4,5 @@ certs/
 credentials/
 src/stress-test/runs/
 facturas/
+src/prueba-afip-prod.js
+src/prueba-pwy-prod.js

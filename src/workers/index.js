@@ -5,11 +5,11 @@ import { writeFilesFromEnv } from "../utils/bootCerts.js";
 writeFilesFromEnv();
 
 const workers = [
-  "webhook.worker.js",
   "payment.worker.js",
   "invoice.worker.js",
   "retry.worker.js",
   "payway.worker.js",
+  "mercadopago.worker.js"
 ];
 
 for (const file of workers) {

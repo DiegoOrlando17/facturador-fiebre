@@ -1,13 +1,14 @@
 import logger from "../utils/logger.js";
 
 import { getPendingPayments } from "../models/Payment.js";
-import { webhooksQueue } from "../queues/webhooks.queue.js";
 import { paymentsQueue } from "../queues/payments.queue.js";
 import { invoicesQueue } from "../queues/invoices.queue.js";
+import { keepTokenAlive } from "../services/drive.service.js";
 
-const RETRY_INTERVAL_MS = 10 * 60 * 1000; // 5 minutos
+const RETRY_INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
 
 async function reenqueuePendingPayments() {
+
   try {
     const pendings = await getPendingPayments();
 
@@ -19,16 +20,7 @@ async function reenqueuePendingPayments() {
       try {
         const { id, provider_payment_id, status } = payment;
 
-        if (status === "mercadopago_fetch_pending") {
-          await webhooksQueue.add(`webhooks-${provider_payment_id}`, { paymentId: id }, {
-            jobId: `job-webhooks-${provider_payment_id}`,
-            attempts: 5,
-            backoff: { type: "exponential", delay: 2000 },
-            removeOnComplete: true,
-            removeOnFail: 50,
-          });
-        }
-        else if (status === "afip_pending") {
+        if (status === "afip_pending") {
           await paymentsQueue.add(`payments-${provider_payment_id}`, { paymentId: id }, {
             jobId: `job-payments-${provider_payment_id}`,
             attempts: 5,
@@ -51,8 +43,10 @@ async function reenqueuePendingPayments() {
       }
     }
 
+    await keepTokenAlive();
+
   } catch (err) {
-    logger.error("❌ Error en retryPending.worker:", err);
+    logger.error("❌ Error en Retry worker:", err);
   }
 }
 
@@ -62,4 +56,4 @@ setInterval(reenqueuePendingPayments, RETRY_INTERVAL_MS);
 // Ejecuta al arrancar también
 await reenqueuePendingPayments();
 
-logger.info(`♻️ RetryPendingWorker iniciado (intervalo: ${RETRY_INTERVAL_MS / 60000} min).`);
+logger.info(`♻️ Retry worker iniciado (intervalo: ${RETRY_INTERVAL_MS / 60000} min).`);

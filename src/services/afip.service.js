@@ -57,13 +57,15 @@ async function pedirTA(cmsB64) {
     </soapenv:Body>
   </soapenv:Envelope>`;
 
-  const { data } = await axios.post(config.AFIP.WSAA_URL, soapEnvelope, {
+  const response = await axios.post(config.AFIP.WSAA_URL, soapEnvelope, {
     headers: {
       "Content-Type": "text/xml; charset=utf-8",
       SOAPAction: "",
     },
     timeout: 30000,
   });
+
+  const data = response.data;
 
   // 1er parseo: SOAP
   const parsedSoap = await parseStringPromise(data, { explicitArray: false });
@@ -107,6 +109,7 @@ async function getTA() {
 export async function getLastInvoiceAFIP(PtoVta, CbteTipo) {
   try {
     const ta = await getTA();
+    console.log(ta);
 
     const soapEnvelope = `
   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ar="http://ar.gov.afip.dif.FEV1/">
@@ -124,13 +127,16 @@ export async function getLastInvoiceAFIP(PtoVta, CbteTipo) {
     </soap:Body>
   </soap:Envelope>`;
 
-    const { data } = await axios.post(config.AFIP.WSFE_URL, soapEnvelope, {
+    const response = await axios.post(config.AFIP.WSFE_URL, soapEnvelope, {
       headers: {
         "Content-Type": "text/xml; charset=utf-8",
         SOAPAction: "http://ar.gov.afip.dif.FEV1/FECompUltimoAutorizado",
       },
     });
 
+    console.log(response);
+
+    const data = response.data;
     const parsed = await parseStringPromise(data, { explicitArray: false });
     const result = parsed["soap:Envelope"]["soap:Body"]["FECompUltimoAutorizadoResponse"]["FECompUltimoAutorizadoResult"];
 
@@ -228,90 +234,3 @@ function formatNroCbte(nroComprobante) {
   if (!nroComprobante) return "";
   return `${config.AFIP.PTO_VTA.toString().padStart(5, "0")}-${nroComprobante.toString().padStart(8, "0")}`;
 }
-
-// function formatFechaAfip(yyyymmdd) {
-//   if (!yyyymmdd || yyyymmdd.length !== 8) return yyyymmdd;
-//   const yyyy = yyyymmdd.substring(0, 4);
-//   const mm = yyyymmdd.substring(4, 6);
-//   const dd = yyyymmdd.substring(6, 8);
-//   return `${dd}/${mm}/${yyyy}`;
-// }
-
-// import logger from "../utils/logger.js";
-// import path from "path";
-// import Afip from "@afipsdk/afip.js";
-// import { config } from "../config/index.js";
-// import { caeDueToDMY } from "../utils/date.js";
-// import { fileURLToPath } from "url";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// const certPath = path.resolve(__dirname, "../../", config.AFIP.CERT);
-// const keyPath = path.resolve(__dirname, "../../", config.AFIP.KEY);
-
-// const afip = new Afip({
-//   CUIT: config.CUIT,
-//   cert: certPath,
-//   key: keyPath,
-//   production: config.AFIP.PRODUCTION
-// });
-
-// export async function getLastInvoiceAFIP() {
-//   console.log("entro a get last invoice afip")
-//   console.log(config.AFIP.PTO_VTA + "" + config.AFIP.CBTE_TIPO)
-//   try {
-//     const last = await afip.ElectronicBilling.getLastVoucher(config.AFIP.PTO_VTA, config.AFIP.CBTE_TIPO);
-//     return last;
-//   }
-//   catch (err) {
-//     logger.error("No se pudo obtener el ultimo comprobante de AFIP. " + err);
-//     return null;
-//   }
-// }
-
-// export async function createInvoiceAFIP(cbteNro, paymentTotal) {
-//   try {
-//     const total = paymentTotal.toFixed(2);
-//     const neto = total / (1 + config.AFIP.ALIC_IVA / 100);
-//     const iva = (total - neto).toFixed(2);
-
-//     const data = {
-//       CantReg: 1,
-//       PtoVta: config.AFIP.PTO_VTA,
-//       CbteTipo: config.AFIP.CBTE_TIPO,
-//       Concepto: 1,
-//       DocTipo: 99,
-//       DocNro: 0,
-//       CbteDesde: cbteNro,
-//       CbteHasta: cbteNro,
-//       CbteFch: today,
-//       ImpTotal: Number(total),
-//       ImpTotConc: 0,
-//       ImpNeto: Number(neto),
-//       ImpOpEx: 0,
-//       ImpIVA: Number(iva),
-//       ImpTrib: 0,
-//       MonId: "PES",
-//       MonCotiz: 1,
-//       Iva: [
-//         {
-//           Id: Number(config.AFIP.ALIC_IVA) === 21 ? 5 : 0,
-//           BaseImp: Number(neto),
-//           Importe: Number(iva)
-//         }
-//       ]
-//     };
-
-//     const res = await afip.ElectronicBilling.createVoucher(data);
-//     return {
-//       cae: res['CAE'],
-//       nroComprobante: cbteNro,
-//       fechaVtoCae: caeDueToDMY(res['CAEFchVto']),
-//     };
-//   }
-//   catch (err) {
-//     logger.error("Error obteniendo el CAE. " + err);
-//     return null;
-//   }
-// }

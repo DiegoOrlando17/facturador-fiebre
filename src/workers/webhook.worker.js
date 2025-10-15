@@ -21,7 +21,7 @@ const worker = new Worker("webhooks", async (job) => {
 
         if (payment.provider === "mercadopago") {
 
-            const paymentMP = await getPaymentInfoMP(payment.provider_payment_id);
+            const paymentMP = getPaymentInfoMP(payment.provider_payment_id);
             if (paymentMP === null) {
                 await updatePaymentStatus(paymentId, "mercadopago_fetch_pending", "No se pudo recuperar el pago de la api mercadopago.");
                 throw new Error("No se pudo recuperar el pago de la api mercadopago.");

@@ -1,6 +1,6 @@
 import logger from "../utils/logger.js";
 
-import { fetchNewPayments, getPaymentInfoPWY } from "../services/payway.service.js";
+import { fetchNewPayments, getPaymentInfoMP } from "../services/mercadopago.service.js";
 import { upsertPayment } from "../models/Payment.js";
 import { getSystemConfig, setSystemConfig } from "../models/SystemConfig.js";
 import { paymentsQueue } from "../queues/payments.queue.js";
@@ -8,12 +8,12 @@ import { config } from "../config/index.js";
 
 let isRunning = false;
 
-const INTERVAL_MS = Number(config.PAYWAY.POLLING_INTERVAL || 3000);
+const INTERVAL_MS = Number(config.MP.POLLING_INTERVAL || 5000);
 
-export async function startPaywayWorker() {
-    logger.info(`🚀 Payway worker iniciado (intervalo: ${INTERVAL_MS} ms)`);
+export async function startMercadopagoWorker() {
+    logger.info(`🚀 Mercadopago worker iniciado (intervalo: ${INTERVAL_MS} ms)`);
 
-    let checkpoint = await getSystemConfig("lastPaywayCheck");
+    let checkpoint = await getSystemConfig("lastMercadopagoCheck");
     checkpoint = checkpoint ? JSON.parse(checkpoint) : null;
 
     let lastTimestamp = checkpoint?.timestamp || null;
@@ -24,16 +24,15 @@ export async function startPaywayWorker() {
         isRunning = true;
 
         try {
-            const newPayments = await fetchNewPayments(lastTimestamp);
-            //logger.info(newPayments.length);
+            const newPayments = await fetchNewPayments(lastPaymentId);
             if (!Array.isArray(newPayments) || newPayments.length === 0) {
                 isRunning = false;
                 return;
             }
 
             const filtered = newPayments.filter((p) => {
-                //logger.info(`lasttimestamp: ${lastTimestamp} - date: ${p.date}`);
-                const ts = p.date;
+
+                const ts = p.date_approved;
                 const id = Number(p.id);
                 if (!ts) return false;
                 if (!lastTimestamp) return true;
@@ -44,20 +43,16 @@ export async function startPaywayWorker() {
                 return false;
             });
 
-            //logger.info(`Payway: ${filtered.length} pagos nuevos encontrados`);
-
             if (filtered.length === 0) {
                 isRunning = false;
                 return;
             }
 
-
-
             for (const p of filtered) {
-                const data = getPaymentInfoPWY(p);
+                const data = getPaymentInfoMP(p);
                 data.status = "pending";
 
-                const payment = await upsertPayment("payway", String(p.id || ""), data);
+                const payment = await upsertPayment("mercadopago", String(p.id || ""), data);
 
                 const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id}`, { paymentId: payment.id }, {
                     jobId: `job-payments-${payment.provider_payment_id}`,
@@ -69,20 +64,20 @@ export async function startPaywayWorker() {
             }
 
             const newest = filtered.sort((a, b) => {
-                if (a.date !== b.date)
-                    return a.date.localeCompare(b.date);
+                if (a.date_approved !== b.date_approved)
+                    return a.date.localeCompare(b.date_approved);
                 return Number(a.id) - Number(b.id);
             }).at(-1);
 
             if (newest) {
-                lastTimestamp = newest.date;
+                lastTimestamp = newest.date_approved;
                 lastPaymentId = Number(newest.id);
 
-                await setSystemConfig("lastPaywayCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId }));
+                await setSystemConfig("lastMercadopagoCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId }));
             }
         }
         catch (error) {
-            logger.error("❌ Error en Payway worker:", error.message);
+            logger.error("❌ Error en Mercadopago worker:", error.message);
         }
         finally {
             isRunning = false;
@@ -90,6 +85,6 @@ export async function startPaywayWorker() {
     }, INTERVAL_MS);
 }
 
-if (process.argv[1].includes("payway.worker.js")) {
-    startPaywayWorker();
+if (process.argv[1].includes("mercadopago.worker.js")) {
+    startMercadopagoWorker();
 }

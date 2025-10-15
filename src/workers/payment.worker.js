@@ -16,7 +16,7 @@ const worker = new Worker("payments", async (job) => {
 
         if (!payment) return;
 
-        if (payment.status !== "processing" && payment.status !== "afip_pending") return;
+        if (payment.status !== "pending" && payment.status !== "processing" && payment.status !== "afip_pending") return;
 
         await updatePaymentStatus(payment.id, "processing");
         payment.status = "processing";

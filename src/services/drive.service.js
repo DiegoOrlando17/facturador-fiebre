@@ -40,3 +40,17 @@ export async function uploadToDrive(pdfPath, filename) {
     return null;
   }
 }
+
+export async function keepTokenAlive() {
+  try {
+    const accessToken = await getAccessToken();
+    const auth = new google.auth.OAuth2();
+    auth.setCredentials({ access_token: accessToken });
+
+    const drive = google.drive({ version: "v3", auth });
+    await drive.files.list({ pageSize: 1 });
+  } catch (err) {
+    console.error("❌ Error manteniendo sesión Google:", err.message);
+  }
+
+}
