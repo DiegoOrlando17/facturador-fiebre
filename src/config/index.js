@@ -52,4 +52,6 @@ export const config = {
 
   REDIS_URL: process.env.REDIS_URL,
 
+  ENABLE_WORKERS: process.env.ENABLE_WORKERS,
+
 };

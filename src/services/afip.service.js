@@ -85,7 +85,7 @@ async function pedirTA(cmsB64) {
   };
 
   fs.writeFileSync(taPath, JSON.stringify(ta, null, 2));
-  console.log("✅ TA guardado en TA-wsfe.json");
+  logger.info("✅ TA guardado en TA-wsfe.json");
   return ta;
 }
 
@@ -96,7 +96,7 @@ async function getTA() {
     if (new Date(ta.expirationTime) > new Date()) {
       return ta;
     } else {
-      console.log("⚠️ TA vencido, generando uno nuevo...");
+      logger.info("⚠️ TA vencido, generando uno nuevo...");
     }
   }
 
@@ -109,7 +109,6 @@ async function getTA() {
 export async function getLastInvoiceAFIP(PtoVta, CbteTipo) {
   try {
     const ta = await getTA();
-    console.log(ta);
 
     const soapEnvelope = `
   <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ar="http://ar.gov.afip.dif.FEV1/">
@@ -133,8 +132,6 @@ export async function getLastInvoiceAFIP(PtoVta, CbteTipo) {
         SOAPAction: "http://ar.gov.afip.dif.FEV1/FECompUltimoAutorizado",
       },
     });
-
-    console.log(response);
 
     const data = response.data;
     const parsed = await parseStringPromise(data, { explicitArray: false });
@@ -216,17 +213,17 @@ export async function createInvoiceAFIP(cbteNro, paymentTotal) {
     const detalle = result.FeDetResp.FECAEDetResponse;
     if (detalle.Resultado === "R") {
       logger.error("Error obteniendo el CAE. " + result.Errors.Err.Msg);
-      return null;
+      return { error: result.Errors.Err.Msg.toString() };
     }
     const cae = detalle.CAE;
     const nroComprobante = formatNroCbte(detalle.CbteDesde);
     const fechaVtoCae = caeDueToDMY(detalle.CAEFchVto);
 
-    return { cae, nroComprobante, fechaVtoCae };
+    return { cae, nroComprobante, fechaVtoCae, error: null };
   }
   catch (err) {
     logger.error("Error obteniendo el CAE. " + err);
-    return null;
+    return { error: err.toString() };
   }
 }
 

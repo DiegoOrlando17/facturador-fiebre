@@ -3,7 +3,7 @@ import logger from "../utils/logger.js";
 import { config } from "../config/index.js";
 import { Worker } from "bullmq";
 import { updatePaymentStatus, getPayment, updatePayment } from "../models/Payment.js";
-import { getNextCbteNro, setLastCbteNro } from "../models/InvoiceSequence.js";
+import { getNextCbteNro, setLastCbteNro, resyncCbteNro } from "../models/InvoiceSequence.js";
 import { createInvoiceAFIP } from "../services/afip.service.js";
 import { connection } from "../config/redis.js";
 import { invoicesQueue } from "../queues/invoices.queue.js";
@@ -30,8 +30,14 @@ const worker = new Worker("payments", async (job) => {
         const nextCbteNro = seq.next;
 
         const response = await createInvoiceAFIP(nextCbteNro, payment.amount);
-        if(!response) {
+        if (response.error) {
             await updatePaymentStatus(payment.id, "afip_pending", "No se pudo obtener el cae de AFIP.");
+
+            if (response.error.includes("El numero o fecha del comprobante no se corresponde con el proximo a autorizar")) {
+                const resync = await resyncCbteNro(config.AFIP.PTO_VTA, config.AFIP.CBTE_TIPO);
+                logger.info(`🔄 Ultimo comprobante actualizado → ${resync}`);
+            }
+
             throw new Error("No se pudo obtener el cae de AFIP.");
         }
 
@@ -58,13 +64,13 @@ const worker = new Worker("payments", async (job) => {
         logger.error("Error en el payment worker: " + err);
         throw err;
     }
-}, { 
-    concurrency: 1, 
+}, {
+    concurrency: 1,
     connection: connection,
     lockDuration: 30000,      // cuánto dura el lock antes de considerarlo muerto
     stalledInterval: 60000,   // cada 60s revisa jobs colgados
     lockRenewTime: 15000
- });
+});
 
 worker.on("ready", () => console.log("✅ Worker payments listo y conectado a Redis"));
 worker.on("error", (err) => console.error("❌ Error en worker:", err));

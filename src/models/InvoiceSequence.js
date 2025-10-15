@@ -1,3 +1,5 @@
+import logger from "../utils/logger.js";
+
 import { db } from "./db.js";
 import { getLastInvoiceAFIP } from "../services/afip.service.js";
 
@@ -45,4 +47,24 @@ export async function setLastCbteNro(id, nro) {
         where: { id },
         data: { last_nro: nro },
     });
+}
+
+export async function resyncCbteNro(pto_vta, cbte_tipo) {
+    try {
+        const lastFromAfip = await getLastInvoiceAFIP(pto_vta, cbte_tipo);
+        if (!lastFromAfip) return null;
+
+        await db.$transaction(async (tx) => {
+            await tx.invoiceSequence.updateMany({
+                where: { pto_vta, cbte_tipo },
+                data: { last_nro: lastFromAfip },
+            });
+        });
+
+        return lastFromAfip;
+    }
+    catch (err) {
+        logger.error("Error en resyncCbteNro: " + err);
+        return null;
+    }
 }
