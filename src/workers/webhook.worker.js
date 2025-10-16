@@ -42,8 +42,8 @@ const worker = new Worker("webhooks", async (job) => {
             await updatePayment(payment.id, payment);
         }
 
-        const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id}`, { paymentId: payment.id }, {
-            jobId: `job-payments-${payment.provider_payment_id}`,
+        const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id.toString()}`, { paymentId: payment.id.toString() }, {
+            jobId: `job-payments-${payment.provider_payment_id.toString()}-${Date.now()}`,
             attempts: 10,
             backoff: { type: "exponential", delay: 3000 },
             removeOnComplete: true,

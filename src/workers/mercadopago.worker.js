@@ -72,7 +72,7 @@ export async function startMercadopagoWorker() {
                 const payment = await upsertPayment("mercadopago", String(p.id || ""), data);
 
                 const queue = await paymentsQueue.add(`payments-${payment.provider_payment_id.toString()}`, { paymentId: payment.id.toString() }, {
-                    jobId: `job-payments-${payment.provider_payment_id.toString()}`,
+                    jobId: `job-payments-${payment.provider_payment_id.toString()}-${Date.now()}`,
                     attempts: 10,
                     backoff: { type: "exponential", delay: 3000 },
                     removeOnComplete: true,
