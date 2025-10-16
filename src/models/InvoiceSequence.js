@@ -33,7 +33,7 @@ export async function getNextCbteNro(pto_vta, cbte_tipo) {
         return db.$transaction(async (tx) => {
             const seq = await getLastCbteSeq(tx, pto_vta, cbte_tipo);
             if (!seq) return null;
-            return { id: seq.id, next: seq.last_nro + 1 };
+            return { id: seq.id, next: seq.last_nro + 1n };
         });
     }
     catch (err) {
