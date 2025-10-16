@@ -22,6 +22,7 @@ const worker = new Worker("payments", async (job) => {
         payment.status = "processing";
 
         const seq = await getNextCbteNro(config.AFIP.PTO_VTA, config.AFIP.CBTE_TIPO);
+        logger.info(`Resultado del getNextCbteNro: ${seq}`);
         if (!seq) {
             await updatePaymentStatus(payment.id, "afip_pending", "No se pudo obtener el ultimo comprobante.");
             throw new Error("No se pudo obtener el ultimo comprobante.");

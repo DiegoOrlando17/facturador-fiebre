@@ -132,11 +132,11 @@ export async function getLastInvoiceAFIP(PtoVta, CbteTipo) {
         SOAPAction: "http://ar.gov.afip.dif.FEV1/FECompUltimoAutorizado",
       },
     });
-
+    logger.info(`Response del getLastInvoiceAFIP: ${response}`);
     const data = response.data;
     const parsed = await parseStringPromise(data, { explicitArray: false });
     const result = parsed["soap:Envelope"]["soap:Body"]["FECompUltimoAutorizadoResponse"]["FECompUltimoAutorizadoResult"];
-
+    
     return Number(result?.CbteNro);
   }
   catch (err) {

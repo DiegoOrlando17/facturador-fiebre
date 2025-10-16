@@ -14,6 +14,7 @@ export async function getLastCbteSeq(tx, pto_vta, cbte_tipo) {
 
     if (!seq) {
         const lastFromAfip = await getLastInvoiceAFIP(pto_vta, cbte_tipo);
+        logger.info(`Resultado del getLastInvoiceAFIP: ${lastFromAfip}`);
         if (!lastFromAfip) return null;
 
         seq = await tx.invoiceSequence.create({
@@ -32,6 +33,7 @@ export async function getNextCbteNro(pto_vta, cbte_tipo) {
     try {
         return db.$transaction(async (tx) => {
             const seq = await getLastCbteSeq(tx, pto_vta, cbte_tipo);
+            logger.info(`Resultado del getLastCbteSeq: ${seq}`);
             if (!seq) return null;
             return { id: seq.id, next: seq.last_nro + 1n };
         });
