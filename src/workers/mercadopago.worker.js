@@ -1,6 +1,6 @@
 import logger from "../utils/logger.js";
 
-import { fetchNewPayments, getPaymentInfoMP } from "../services/mercadopago.service.js";
+import { fetchNewPayments, getPaymentInfoMP, fetchLastPayment } from "../services/mercadopago.service.js";
 import { upsertPayment } from "../models/Payment.js";
 import { getSystemConfig, setSystemConfig } from "../models/SystemConfig.js";
 import { paymentsQueue } from "../queues/payments.queue.js";
@@ -13,17 +13,34 @@ const INTERVAL_MS = Number(config.MP.POLLING_INTERVAL || 5000);
 export async function startMercadopagoWorker() {
     logger.info(`🚀 Mercadopago worker iniciado (intervalo: ${INTERVAL_MS} ms)`);
 
-    let checkpoint = await getSystemConfig("lastMercadopagoCheck");
-    checkpoint = checkpoint ? JSON.parse(checkpoint) : null;
-
-    let lastTimestamp = checkpoint?.timestamp || null;
-    let lastPaymentId = checkpoint?.lastPaymentId || 0;
-
     setInterval(async () => {
         if (isRunning) return;
         isRunning = true;
 
         try {
+            let checkpoint = await getSystemConfig("lastMercadopagoCheck");
+            checkpoint = checkpoint ? JSON.parse(checkpoint) : null;
+
+            let lastTimestamp = checkpoint?.timestamp || null;
+            let lastPaymentId = checkpoint?.lastPaymentId || 0;
+
+            if (!lastPaymentId) {
+                logger.warn("⚠️ No hay checkpoint en DB, inicializando con último pago de MercadoPago...");
+
+                const lastPayment = await fetchLastPayment(); // ajustá para traer solo 1, del más reciente        
+
+                if (lastPayment) {
+                    lastTimestamp = lastPayment.date_approved;
+                    lastPaymentId = lastPayment.id;
+                    await setSystemConfig("lastMercadopagoCheck", JSON.stringify({ timestamp: lastTimestamp, lastPaymentId: lastPaymentId.toString() }));
+                    logger.info(`🧭 Checkpoint inicial MP creado → id=${lastPaymentId.toString()}, date=${lastTimestamp}`);
+                }
+
+                // ⛔️ Salimos del ciclo para no procesar más en este intervalo
+                isRunning = false;
+                return;
+            }
+
             const newPayments = await fetchNewPayments(lastPaymentId);
             if (!Array.isArray(newPayments) || newPayments.length === 0) {
                 isRunning = false;

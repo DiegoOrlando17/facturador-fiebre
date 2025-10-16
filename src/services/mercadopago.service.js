@@ -60,7 +60,7 @@ export async function fetchNewPayments(lastPaymentId) {
 
 
       offset += limit;
-      
+
     } catch (error) {
       logger.error(`❌ Error al obtener el offset ${offset} de Mercadopago:`, error);
       break; // si falla una página, salimos del bucle
@@ -68,6 +68,33 @@ export async function fetchNewPayments(lastPaymentId) {
   }
 
   return allPayments.reverse();
+}
+
+export async function fetchLastPayment() {
+  try {
+    const params = {};
+    params.status = "approved";
+    params.sort = "date_approved";
+    params.criteria = "desc";
+    params.limit = 1;
+
+    const res = await axios.get(`${config.MP.API_URL}/payments/search`, {
+      headers: { Authorization: "Bearer " + config.MP.ACCESS_TOKEN },
+      params: params,
+    });
+
+    const results = res.data.results || [];
+
+    if (results.length === 0) return null;
+
+    const lastPayment = results[0];
+
+    return lastPayment;
+
+  } catch (error) {
+    logger.error(`❌ Error en FetchLastPayment de Mercadopago:`, error);
+    return null;
+  }
 }
 
 async function createCardToken() {

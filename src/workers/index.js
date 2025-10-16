@@ -9,7 +9,6 @@ const workers = [
   "payment.worker.js",
   "invoice.worker.js",
   "retry.worker.js",
-  "payway.worker.js",
   "mercadopago.worker.js"
 ];
 

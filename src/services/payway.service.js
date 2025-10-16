@@ -194,3 +194,25 @@ export async function fetchNewPayments(fromDate) {
 
   return allPayments;
 }
+
+export async function fetchLastPayment() {
+  try {
+    const params = {};
+
+    const res = await axios.get(`${config.PAYWAY.API_URL}/payments`, {
+      headers: { apikey: config.PAYWAY.PRIVATE_KEY },
+      params,
+    });
+
+    const results = res.data.results || [];
+
+    if (results.length === 0) return null;
+
+    const lastPayment = results[0];
+    return lastPayment;
+
+  } catch (error) {
+    logger.error(`❌ Error en FetchLastPayment de Payway:`, error.message);
+    return null;
+  }
+}
