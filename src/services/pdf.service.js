@@ -40,62 +40,62 @@ export function createInvoicePDF(payment, cae, nroComprobante, fechaVtoCae) {
 
             // === DATOS DEL PAGO ===
             doc.fillColor("#000").fontSize(12);
-            doc.text(`Factura N°: ${nroComprobante}`, 400, 120);
-            doc.text(`Fecha: ${new Date(payment.date_approved).toLocaleString("es-AR")}`, 400, 135);
-            doc.text(`Método de pago: ${payment.payment_method_id}`, 400, 150);
-            doc.text(`Comprador: ${payment.payer?.email || "Consumidor Final"}`, 400, 165);
-            doc.text(`CAE: ${cae}   Vto: ${fechaVtoCae}`, { align: "center" });
+            doc.text(`Factura N°: ${nroComprobante}`, 50, 250);
+            doc.text(`Fecha: ${new Date(payment.date_approved).toLocaleString("es-AR")}`, 50, 265);
+            doc.text(`Método de pago: ${payment.payment_method_id}`, 50, 280);
+            doc.text(`Comprador: ${payment.payer?.email || "Consumidor Final"}`, 50, 295);
+            doc.text(`CAE: ${cae}   Vto: ${fechaVtoCae}`, 50, 310);
 
             doc.moveDown(3);
 
             // === DETALLE DE VENTA ===
-            doc.fillColor("#000").fontSize(14).text("Detalle de la venta", 50, doc.y, {
-                underline: true,
-                align: "left"
-            });
-            doc.moveDown(0.5);
+            // doc.fillColor("#000").fontSize(14).text("Detalle de la venta", 50, doc.y, {
+            //     underline: true,
+            //     align: "left"
+            // });
+            // doc.moveDown(0.5);
 
-            const items = payment.additional_info?.items || [
-                { title: payment.description || "Venta", quantity: 1, unit_price: payment.transaction_amount }
-            ];
+            // const items = payment.additional_info?.items || [
+            //     { title: payment.description || "Venta", quantity: 1, unit_price: payment.transaction_amount }
+            // ];
 
-            let total = 0;
+            // let total = 0;
 
-            // Definir posiciones de columnas
-            const colX = { producto: 50, cantidad: 300, unitario: 360, subtotal: 460 };
-            let y = doc.y + 5;
+            // // Definir posiciones de columnas
+            // const colX = { producto: 50, cantidad: 300, unitario: 360, subtotal: 460 };
+            // let y = doc.y + 5;
 
-            // Cabecera con fondo gris
-            doc.rect(50, y, 500, 20).fill("#eee").stroke();
-            doc.fillColor("#000").fontSize(12).text("Producto", colX.producto + 5, y + 5);
-            doc.text("Cant.", colX.cantidad + 5, y + 5);
-            doc.text("Precio Unit.", colX.unitario + 5, y + 5);
-            doc.text("Subtotal", colX.subtotal + 5, y + 5);
+            // // Cabecera con fondo gris
+            // doc.rect(50, y, 500, 20).fill("#eee").stroke();
+            // doc.fillColor("#000").fontSize(12).text("Producto", colX.producto + 5, y + 5);
+            // doc.text("Cant.", colX.cantidad + 5, y + 5);
+            // doc.text("Precio Unit.", colX.unitario + 5, y + 5);
+            // doc.text("Subtotal", colX.subtotal + 5, y + 5);
 
-            y += 25;
+            // y += 25;
 
-            // Ítems con líneas divisorias
-            items.forEach(item => {
-                const quantity = item.quantity !== undefined ? Number(item.quantity) : 1;
-                const unitPrice = item.unit_price !== undefined ? Number(item.unit_price) : 0;
-                const subtotal = quantity * unitPrice;
-                total += subtotal;
+            // // Ítems con líneas divisorias
+            // items.forEach(item => {
+            //     const quantity = item.quantity !== undefined ? Number(item.quantity) : 1;
+            //     const unitPrice = item.unit_price !== undefined ? Number(item.unit_price) : 0;
+            //     const subtotal = quantity * unitPrice;
+            //     total += subtotal;
 
-                doc.fillColor("#000").fontSize(12);
-                doc.text(item.title, colX.producto + 5, y);
-                doc.text(quantity.toString(), colX.cantidad + 5, y);
-                doc.text(`$${unitPrice.toFixed(2)}`, colX.unitario + 5, y);
-                doc.text(`$${subtotal.toFixed(2)}`, colX.subtotal + 5, y);
+            //     doc.fillColor("#000").fontSize(12);
+            //     doc.text(item.title, colX.producto + 5, y);
+            //     doc.text(quantity.toString(), colX.cantidad + 5, y);
+            //     doc.text(`$${unitPrice.toFixed(2)}`, colX.unitario + 5, y);
+            //     doc.text(`$${subtotal.toFixed(2)}`, colX.subtotal + 5, y);
 
-                // Línea separadora
-                doc.moveTo(50, y + 18).lineTo(550, y + 18).strokeColor("#ccc").stroke();
+            //     // Línea separadora
+            //     doc.moveTo(50, y + 18).lineTo(550, y + 18).strokeColor("#ccc").stroke();
 
-                y += 25;
-            });
+            //     y += 25;
+            // });
 
             // Total destacado
             doc.fontSize(12).fillColor("#000");
-            doc.text(`TOTAL: $${total.toFixed(2)}`, colX.subtotal - 30, y + 10, {
+            doc.text(`TOTAL: $${payment.amount.toFixed(2)}`, 50, 400, {
                 align: "right"
             });
 
