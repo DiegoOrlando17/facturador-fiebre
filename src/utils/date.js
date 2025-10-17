@@ -7,7 +7,7 @@ export function yyyymmdd(date = new Date()) {
 
 export function caeDueToDMY(caeDue) {
   // caeDue: 'yyyyMMdd' -> 'dd/MM/yyyy'
-  const y = caeDue.slice(0,4), m = caeDue.slice(4,6), d = caeDue.slice(6,8);
+  const y = caeDue.slice(0, 4), m = caeDue.slice(4, 6), d = caeDue.slice(6, 8);
   return `${d}/${m}/${y}`;
 }
 
@@ -20,4 +20,13 @@ export function toMPformatDate(date) {
   const seconds = String(date.getSeconds()).padStart(2, '0');
 
   return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
+export function getTodaysDate() {
+  const date = new Date();
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); 
+  const year = String(date.getFullYear()).slice(-2); 
+
+  return `${day}-${month}-${year}`;
 }
