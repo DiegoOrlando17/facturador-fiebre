@@ -9,7 +9,8 @@ export const config = {
     ACCESS_TOKEN: process.env.MP_ACCESS_TOKEN,
     PUBLIC_KEY: process.env.MP_PUBLIC_KEY,
     API_URL: process.env.MP_API_URL,
-    POLLING_INTERVAL: process.env.MP_POLLING_INTERVAL
+    POLLING_INTERVAL: process.env.MP_POLLING_INTERVAL,
+    POS_ID: process.env.MP_POS_ID
   },
   
   PAYWAY: {

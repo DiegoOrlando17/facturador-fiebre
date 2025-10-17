@@ -53,7 +53,8 @@ export async function fetchNewPayments(lastPaymentId) {
           keepGoing = false;
           break;
         }
-        allPayments.push(payment);
+        if(payment.pos_id !== null && payment.pos_id === config.MP.POS_ID && payment.operation_type !== "money_transfer")
+          allPayments.push(payment);
       }
 
       if (!keepGoing || results.length < limit) break;
