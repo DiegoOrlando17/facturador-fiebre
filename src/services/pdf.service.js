@@ -3,10 +3,12 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import logger from "../utils/logger.js";
 
+import { config } from "../config/index.js"
+
 export function createInvoicePDF(payment, cae, nroComprobante, fechaVtoCae) {
     try {
         return new Promise((resolve, reject) => {
-            const fileName = `factura_${payment.provider_payment_id.toString()}.pdf`;
+            const fileName = `${config.CUIT}_${config.AFIP.CBTE_TIPO.toString().padStart(3, "0")}_${config.AFIP.PTO_VTA.toString().padStart(5, "0")}_${nroComprobante.split('-')[1]}.pdf`;
             const filePath = `./facturas/${fileName}`;
 
             if (!fs.existsSync("./facturas")) {
