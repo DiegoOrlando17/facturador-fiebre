@@ -6,6 +6,8 @@ import { createInvoicePDF } from "../services/pdf.service.js";
 import { uploadToDrive } from "../services/drive.service.js";
 import { appendRow } from "../services/sheets.service.js";
 import { connection } from "../config/redis.js";
+import { config } from "../config/index.js";
+import { getTodaysDate } from "../utils/date.js";
 
 const worker = new Worker("invoices", async (job) => {
     try {
@@ -29,8 +31,8 @@ const worker = new Worker("invoices", async (job) => {
         }
 
         if (payment.status === "processing" || payment.status === "pdf_pending" || payment.status === "drive_pending") {
-
-            const driveFile = await uploadToDrive(payment.pdf_path, `factura_${payment.provider_payment_id.toString()}.pdf`);
+            const fileName = `${config.CUIT}_${config.AFIP.CBTE_TIPO.toString().padStart(3, "0")}_${config.AFIP.PTO_VTA.toString().padStart(5, "0")}_${payment.cbte_nro.split('-')[1]}_${getTodaysDate()}.pdf`;
+            const driveFile = await uploadToDrive(payment.pdf_path, fileName);
             if (!driveFile) {
                 await updatePaymentStatus(payment.id, "drive_pending", "No se pudo subir la factura al drive.");
                 throw new Error("No se pudo subir la factura al drive.");
