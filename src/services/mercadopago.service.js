@@ -78,15 +78,15 @@ export async function fetchNewPayments(lastTimestamp) {
 
       for (const payment of results) {
         // Parse seguro del date_approved
-        const approvedAt = parseUtc(p.date_approved);
+        const approvedAt = parseUtc(payment.date_approved);
 
         if (approvedAt.getTime() < floorDate.getTime()) {
           sawOlderThanFloor = true;
           break;
         }
 
-        const isPosOk = p.pos_id !== null && String(p.pos_id) === String(posId);
-        const isNotTransfer = p.operation_type !== "money_transfer";
+        const isPosOk = payment.pos_id !== null && String(payment.pos_id) === String(config.MP.POS_ID);
+        const isNotTransfer = payment.operation_type !== "money_transfer";
 
         if (isPosOk && isNotTransfer)
           newPayments.push(payment);

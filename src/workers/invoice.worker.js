@@ -7,7 +7,7 @@ import { uploadToDrive } from "../services/drive.service.js";
 import { appendRow } from "../services/sheets.service.js";
 import { connection } from "../config/redis.js";
 import { config } from "../config/index.js";
-import { getTodaysDate } from "../utils/date.js";
+import { getTodaysDate, formatToLocalTime } from "../utils/date.js";
 
 const worker = new Worker("invoices", async (job) => {
     try {
@@ -47,7 +47,7 @@ const worker = new Worker("invoices", async (job) => {
             const sheets = await appendRow([
                 payment.provider_payment_id.toString(),
                 payment.cbte_nro,
-                payment.date_approved,
+                formatToLocalTime(payment.date_approved),
                 payment.amount,
                 payment.customer || "Consumidor Final",
                 payment.cae,

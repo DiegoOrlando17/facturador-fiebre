@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export function yyyymmdd(date = new Date()) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -34,4 +36,10 @@ export function getTodaysDate() {
 export function parseUtc(dateStr) {
   // MP te da "2025-10-19T01:25:12.000-04:00" => lo parseamos a Date UTC
   return new Date(dateStr); // Date ya interpreta el offset y guarda UTC internamente
+}
+
+export function formatToLocalTime(utcDate) {
+  return DateTime.fromJSDate(utcDate, { zone: "utc" })
+    .setZone("America/Argentina/Buenos_Aires")    
+    .toFormat("dd/MM/yyyy HH:mm:ss");
 }

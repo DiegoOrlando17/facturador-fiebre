@@ -4,7 +4,7 @@ import path from "path";
 import logger from "../utils/logger.js";
 
 import { config } from "../config/index.js"
-import { getTodaysDate } from "../utils/date.js";
+import { getTodaysDate, formatToLocalTime } from "../utils/date.js";
 
 export function createInvoicePDF(payment, cae, nroComprobante, fechaVtoCae) {
     try {
@@ -44,7 +44,7 @@ export function createInvoicePDF(payment, cae, nroComprobante, fechaVtoCae) {
             // === DATOS DEL PAGO ===
             doc.fillColor("#000").fontSize(12);
             doc.text(`Factura N°: ${nroComprobante}`, 50, 250);
-            doc.text(`Fecha: ${new Date(payment.date_approved).toLocaleString("es-AR")}`, 50, 265);
+            doc.text(`Fecha: ${formatToLocalTime(payment.date_approved)}`, 50, 265);
             doc.text(`Método de pago: ${payment.payment_method_id}`, 50, 280);
             doc.text(`Comprador: ${payment.payer?.email || "Consumidor Final"}`, 50, 295);
             doc.text(`CAE: ${cae}   Vto: ${fechaVtoCae}`, 50, 310);

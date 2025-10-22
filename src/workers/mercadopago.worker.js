@@ -1,7 +1,7 @@
 import logger from "../utils/logger.js";
 
 import { fetchNewPayments, getPaymentInfoMP, fetchLastPayment } from "../services/mercadopago.service.js";
-import { upsertPayment } from "../models/Payment.js";
+import { upsertPayment, getPayment } from "../models/Payment.js";
 import { getSystemConfig, setSystemConfig } from "../models/SystemConfig.js";
 import { paymentsQueue } from "../queues/payments.queue.js";
 import { config } from "../config/index.js";
@@ -67,9 +67,9 @@ export async function startMercadopagoWorker() {
 
             for (const p of filtered) {
                 // Verificar si ya existe el pago en DB (por overlap temporal)
-                const existing = await getPaymentByProviderId(providerId);
+                const existing = await getPayment(p.id);
                 if (existing) {
-                    logger.info(`↩️ Pago ${providerId} ya existe en DB, se omite.`);
+                    logger.info(`↩️ Pago ${p.id} ya existe en DB, se omite.`);
                     continue;
                 }
 
