@@ -87,3 +87,9 @@ export async function getPendingPayments() {
     },
   });
 }
+
+export async function getPaymentByProviderId(providerPaymentId) {
+  return db.payment.findUnique({
+    where: { provider_payment_id: String(providerPaymentId) },
+  });
+}

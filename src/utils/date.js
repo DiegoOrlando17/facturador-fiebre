@@ -30,3 +30,8 @@ export function getTodaysDate() {
 
   return `${day}-${month}-${year}`;
 }
+
+export function parseUtc(dateStr) {
+  // MP te da "2025-10-19T01:25:12.000-04:00" => lo parseamos a Date UTC
+  return new Date(dateStr); // Date ya interpreta el offset y guarda UTC internamente
+}

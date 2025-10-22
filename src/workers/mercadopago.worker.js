@@ -11,7 +11,7 @@ let isRunning = false;
 const INTERVAL_MS = Number(config.MP.POLLING_INTERVAL || 5000);
 
 export async function startMercadopagoWorker() {
-    logger.info(`🚀 Mercadopago worker iniciado (intervalo: ${INTERVAL_MS} ms)`);
+    logger.info(`✅ Mercadopago worker iniciado (intervalo: ${INTERVAL_MS} ms)`);
 
     setInterval(async () => {
         if (isRunning) return;
@@ -24,7 +24,7 @@ export async function startMercadopagoWorker() {
             let lastTimestamp = checkpoint?.timestamp || null;
             let lastPaymentId = checkpoint?.lastPaymentId || 0;
 
-            if (!lastPaymentId) {
+            if (!lastTimestamp) {
                 logger.warn("⚠️ No hay checkpoint en DB, inicializando con último pago de MercadoPago...");
 
                 const lastPayment = await fetchLastPayment(); // ajustá para traer solo 1, del más reciente        
@@ -36,12 +36,12 @@ export async function startMercadopagoWorker() {
                     logger.info(`🧭 Checkpoint inicial MP creado → id=${lastPaymentId.toString()}, date=${lastTimestamp}`);
                 }
 
-                // ⛔️ Salimos del ciclo para no procesar más en este intervalo
+                // Salimos del ciclo para no procesar más en este intervalo
                 isRunning = false;
                 return;
             }
 
-            const newPayments = await fetchNewPayments(lastPaymentId);
+            const newPayments = await fetchNewPayments(lastTimestamp);
             if (!Array.isArray(newPayments) || newPayments.length === 0) {
                 isRunning = false;
                 return;
@@ -66,6 +66,13 @@ export async function startMercadopagoWorker() {
             }
 
             for (const p of filtered) {
+                // Verificar si ya existe el pago en DB (por overlap temporal)
+                const existing = await getPaymentByProviderId(providerId);
+                if (existing) {
+                    logger.info(`↩️ Pago ${providerId} ya existe en DB, se omite.`);
+                    continue;
+                }
+
                 const data = getPaymentInfoMP(p);
                 data.status = "pending";
 

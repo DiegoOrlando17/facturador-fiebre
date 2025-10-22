@@ -4,6 +4,7 @@ import crypto from "crypto";
 import axios from "axios";
 
 import { config } from "../config/index.js";
+import { parseUtc } from "../utils/date.js"
 
 export function getPaymentInfoMP(payment) {
   try {
@@ -23,13 +24,38 @@ export function getPaymentInfoMP(payment) {
   }
 }
 
-export async function fetchNewPayments(lastPaymentId) {
-  const allPayments = [];
-  let offset = 0;
+/**
+ * - Ordenar por date_approved DESC (más nuevos primero)
+ * - Paginamos con offset
+ * - Procesamos pagos mientras su date_approved >= (lastApprovedDate - overlap)
+ * - Apenas vemos pagos con date_approved < (lastApprovedDate - overlap), CORTAMOS la paginación
+ * - De-duplicamos por provider_payment_id (DB) o por un set en memoria si hace falta
+ */
+export async function fetchNewPayments(lastTimestamp) {
+
   const limit = 500;
-  let keepGoing = true;
+  const maxPages = 20; // cortafuego para no recorrer histórico infinito
+  const overlapMs = 15_000; // 15s de margen por latencia de indexación
+  const maxLookbackMs = 8 * 60 * 60 * 1000; // 8h por si lastApprovedDate es muy viejo
+
+  const newPayments = [];
+
+  let offset = 0;
+  let pages = 0;
+
+  // Normalizamos checkpoint temporal
+  const now = new Date();
+  const fallbackFloor = new Date(now.getTime() - maxLookbackMs);
+  const lastApproved = lastTimestamp ? new Date(lastTimestamp) : fallbackFloor;
+
+  // Margen/overlap para no perder pagos que aparecieron tarde en el search
+  const floorDate = new Date(Math.max(0, lastApproved.getTime() - overlapMs));
 
   while (true) {
+    if (pages >= maxPages) {
+      break;
+    }
+
     const params = {};
     params.status = "approved";
     params.sort = "date_approved";
@@ -48,27 +74,49 @@ export async function fetchNewPayments(lastPaymentId) {
 
       if (results.length === 0) break;
 
+      let sawOlderThanFloor = false;
+
       for (const payment of results) {
-        if (String(payment.id) === String(lastPaymentId)) {
-          keepGoing = false;
+        // Parse seguro del date_approved
+        const approvedAt = parseUtc(p.date_approved);
+
+        if (approvedAt.getTime() < floorDate.getTime()) {
+          sawOlderThanFloor = true;
           break;
         }
-        if(payment.pos_id !== null && payment.pos_id === config.MP.POS_ID && payment.operation_type !== "money_transfer")
-          allPayments.push(payment);
+
+        const isPosOk = p.pos_id !== null && String(p.pos_id) === String(posId);
+        const isNotTransfer = p.operation_type !== "money_transfer";
+
+        if (isPosOk && isNotTransfer)
+          newPayments.push(payment);
       }
 
-      if (!keepGoing || results.length < limit) break;
+      // Si encontramos items más viejos que el piso, no hace falta seguir paginando
+      if (sawOlderThanFloor) {
+        break;
+      }
 
+      // Si esta página vino incompleta, ya no hay más hacia atrás
+      if (results.length < limit) {
+        break;
+      }
 
       offset += limit;
+      pages += 1;
 
     } catch (error) {
-      logger.error(`❌ Error al obtener el offset ${offset} de Mercadopago:`, error);
-      break; // si falla una página, salimos del bucle
+      const status = error.response?.status;
+      const message = error.response?.data?.message || error.message;
+      logger.warn(`⚠️ MP devolvió ${status || "error"} en offset ${offset}: ${message}`);
+      break; // salimos y seguimos en la próxima iteración
     }
   }
 
-  return allPayments.reverse();
+  // Devolvemos en orden cronológico ascendente para procesar naturalmente
+  // (los trajimos desc, así que invertimos)
+  newPayments.sort((a, b) => new Date(a.date_approved) - new Date(b.date_approved));
+  return newPayments;
 }
 
 export async function fetchLastPayment() {
