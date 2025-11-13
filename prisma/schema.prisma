@@ -35,8 +35,8 @@ model Payment {
 }
 
 model InvoiceSequence {
-  id        BigInt      @id @default(autoincrement())
-  pto_vta   Int      @unique
+id        BigInt      @id @default(autoincrement())
+  pto_vta   Int       @unique
   cbte_tipo Int
   last_nro  BigInt
   updatedAt DateTime @updatedAt

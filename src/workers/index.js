@@ -9,7 +9,8 @@ const workers = [
   "payment.worker.js",
   "invoice.worker.js",
   "retry.worker.js",
-  "mercadopago.worker.js"
+  "mercadopago.worker.js",
+  "audit.worker.js"
 ];
 
 if (config.ENABLE_WORKERS === "true") {

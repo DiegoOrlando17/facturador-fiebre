@@ -8,3 +8,4 @@ src/prueba-afip-prod.js
 src/prueba-pwy-prod.js
 src/prueba-google-prod.js
 src/prueba-mp-prod.js
+src/audit-mp.js

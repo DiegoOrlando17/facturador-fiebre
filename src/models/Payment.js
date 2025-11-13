@@ -4,7 +4,7 @@ import { db } from "./db.js";
  * Inserta o actualiza un pago (idempotente).
  * Si no existe, lo crea. Si ya existe, actualiza los campos nuevos.
  */
-export async function upsertPayment(provider, provider_payment_id, data = {}) {  
+export async function upsertPayment(provider, provider_payment_id, data = {}) {
   return db.payment.upsert({
     where: { provider_provider_payment_id: { provider, provider_payment_id } },
     update: {
@@ -53,7 +53,7 @@ export async function updatePaymentStatus(id, newStatus, error = null) {
  */
 export async function getPayment(id) {
   return db.payment.findUnique({
-    where: { id } ,
+    where: { id },
   });
 }
 
@@ -85,5 +85,12 @@ export async function getPendingPayments() {
       provider_payment_id: true,
       status: true,
     },
+  });
+}
+
+export async function getAllPaymentsIds(provider) {
+  return db.payment.findMany({
+    where: { provider },
+    select: { provider_payment_id: true }
   });
 }

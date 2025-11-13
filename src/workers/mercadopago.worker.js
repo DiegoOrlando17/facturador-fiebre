@@ -69,7 +69,7 @@ export async function startMercadopagoWorker() {
                 // Verificar si ya existe el pago en DB (por overlap temporal)
                 const existing = await getPayment(p.id);
                 if (existing) {
-                    logger.info(`↩️ Pago ${p.id} ya existe en DB, se omite.`);
+                    //logger.info(`↩️ Pago ${p.id} ya existe en DB, se omite.`);
                     continue;
                 }
 

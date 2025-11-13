@@ -56,4 +56,4 @@ setInterval(reenqueuePendingPayments, RETRY_INTERVAL_MS);
 // Ejecuta al arrancar también
 await reenqueuePendingPayments();
 
-logger.info(`♻️ Retry worker iniciado (intervalo: ${RETRY_INTERVAL_MS / 60000} min).`);
+logger.info(`♻️  Retry worker iniciado (intervalo: ${RETRY_INTERVAL_MS / 60000} min).`);
